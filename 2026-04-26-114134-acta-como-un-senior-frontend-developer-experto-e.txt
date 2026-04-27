@@ -1,0 +1,655 @@
+╭─── Claude Code v2.1.92 ──────────────────────────────────────────────────────╮
+│                                          │ Tips for getting started          │
+│          Welcome back alejandro!         │ Run /init to create a CLAUDE.md … │
+│                                          │ ───────────────────────────────── │
+│                  ▐▛███▜▌                 │ Recent activity                   │
+│                 ▝▜█████▛▘                │ No recent activity                │
+│                   ▘▘ ▝▝                  │                                   │
+│                                          │                                   │
+│   Sonnet 4.6 · Claude Pro · alejandro    │                                   │
+│          ~\Downloads\VitalCode           │                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+  ↑ Install the PyCharm plugin from the JetBrains Marketplace:
+    https://docs.claude.com/s/claude-code-jetbrains
+
+❯ Actúa como un Senior Frontend Developer experto en React, TypeScript y        
+Tailwind CSS. >                                                                 
+Estoy trabajando en el frontend de un proyecto integrador universitario llamado 
+ "Vital Code". Mi compañero está desarrollando el backend en Spring Boot. Mi    
+objetivo es tener todas las pantallas y formularios listos hoy para conectarlos 
+ a su API y hacer un merge en GitHub mañana.                                    
+                                                                                
+Archivos adjuntos para tu análisis:                                             
+                                                                                
+PROYECTO_INTEGRADOR_VITAL_CODE.pdf: Léelo para entender el contexto del sistema 
+ médico, la misión de la empresa y, lo más importante, extraer la paleta de     
+colores corporativa y la idea del logo para aplicarlos en el diseño.            
+                                                                                
+ER_sinterminar.png: Analiza este diagrama de entidad-relación detalladamente.   
+Necesito que los formularios que programes contengan los inputs exactos que     
+coincidan con los campos (atributos) de cada tabla.                             
+                                                                                
+Tus Tareas Paso a Paso:                                                         
+                                                                                
+1. Configuración y Estilos:                                                     
+                                                                                
+Define una estructura de carpetas limpia y profesional para el proyecto en      
+React (ej. /components, /pages, /services, /types).                             
+                                                                                
+Usa Tailwind CSS basándote estrictamente en la paleta de colores del PDF.       
+                                                                                
+2. Modelos de TypeScript (Interfaces):                                          
+                                                                                
+Crea las interfaces de TypeScript (interface Paciente, interface Administrador, 
+ interface PersonalSalud) basándote únicamente en los campos que ves en la      
+imagen ER_sinterminar.png.                                                      
+                                                                                
+3. Desarrollo de Vistas y Componentes:                                          
+Crea el código para las siguientes pantallas, asegurándote de que tengan un     
+diseño moderno, responsivo y profesional (tipo dashboard médico):               
+                                                                                
+Login: Un formulario atractivo que pida correo y contraseña.                    
+                                                                                
+Módulo de Pacientes: Una vista con una tabla para listar pacientes y un         
+formulario (Modal o página aparte) para el CRUD (Crear, Editar, Eliminar) con   
+los campos del diagrama ER.                                                     
+                                                                                
+Módulo de Administradores: Tabla y formulario CRUD con los campos del diagrama  
+ER.                                                                             
+                                                                                
+Módulo de Personal de Salud: Tabla y formulario CRUD con los campos del         
+diagrama ER.                                                                    
+                                                                                
+4. Preparación para el Backend:                                                 
+                                                                                
+En lugar de poner la lógica directamente en los componentes, crea un archivo de 
+ servicios (ej. api.ts o services.ts) con funciones asíncronas vacías o         
+simuladas (usando fetch o axios) para cada acción del CRUD. Ejemplo: export     
+const crearPaciente = async (data: Paciente) => { ... }.                        
+                                                                                
+Deja comentarios claros que digan "AQUÍ VA EL ENDPOINT DE SPRING BOOT" para que 
+ yo solo tenga que pegar la URL que me dé mi compañero mañana.                  
+                                                                                
+Entregable:                                                                     
+Entrégame el código organizado por archivos. Comienza con las interfaces de     
+TypeScript, luego el archivo de servicios de la API, y finalmente el código de  
+los componentes visuales.                                                       
+
+  Listed 2 directories (ctrl+o to expand)
+
+● I found the files. Let me read them both.
+
+  Searched for 1 pattern, read 1 file, listed 1 directory (ctrl+o to expand)
+
+● Tengo toda la información del diagrama ER. Ahora voy a construir el frontend
+  completo. La estructura de entidades es:
+
+  - Usuario (base): id_usuario, nombre, apellido, correo, contraseña, telefono,
+  estado, fecha_creacion, ultimo_acceso
+  - Administrador: id_administrador, departamento (hereda Usuario)
+  - Personal_Salud: id_personalsalud, cargo, num_licencia, institucion (hereda
+  Usuario)
+  - Paciente: id_paciente, num_documento, fecha_nacimiento, grupo_sanguineo,
+  genero, EPS (hereda Usuario)
+
+  Creando todos los archivos ahora:
+
+  Listed 1 directory (ctrl+o to expand)
+
+● Empresa: HealthTech S.A.S. Ahora creo el frontend completo:
+
+● Write(frontend\package.json)
+  ⎿  Wrote 28 lines to frontend\package.json
+       1 {
+       2   "name": "vitalcode-frontend",
+       3   "private": true,
+       4   "version": "1.0.0",
+       5   "type": "module",
+       6   "scripts": {
+       7     "dev": "vite",
+       8     "build": "tsc && vite build",
+       9     "preview": "vite preview"
+      10   },
+     … +18 lines (ctrl+o to expand)
+
+● Write(frontend\vite.config.ts)
+  ⎿  Wrote 16 lines to frontend\vite.config.ts
+       1 import { defineConfig } from 'vite'
+       2 import react from '@vitejs/plugin-react'
+       3 
+       4 export default defineConfig({
+       5   plugins: [react()],
+       6   server: {
+       7     port: 3000,
+       8     proxy: {
+       9       // Proxy para evitar CORS durante desarrollo
+      10       '/api': {
+     … +6 lines (ctrl+o to expand)
+
+● Write(frontend\tsconfig.json)
+  ⎿  Wrote 25 lines to frontend\tsconfig.json
+       1 {
+       2   "compilerOptions": {
+       3     "target": "ES2020",
+       4     "useDefineForClassFields": true,
+       5     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+       6     "module": "ESNext",
+       7     "skipLibCheck": true,
+       8     "moduleResolution": "bundler",
+       9     "allowImportingTsExtensions": true,
+      10     "resolveJsonModule": true,
+     … +15 lines (ctrl+o to expand)
+
+● Write(frontend\tsconfig.node.json)
+  ⎿  Wrote 10 lines to frontend\tsconfig.node.json
+       1 {
+       2   "compilerOptions": {
+       3     "composite": true,
+       4     "skipLibCheck": true,
+       5     "module": "ESNext",
+       6     "moduleResolution": "bundler",
+       7     "allowSyntheticDefaultImports": true
+       8   },
+       9   "include": ["vite.config.ts"]
+      10 }
+
+● Write(frontend\tailwind.config.js)
+  ⎿  Wrote 46 lines to frontend\tailwind.config.js
+       1 /** @type {import('tailwindcss').Config} */
+       2 export default {
+       3   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+       4   theme: {
+       5     extend: {
+       6       colors: {
+       7         // ── Paleta corporativa HealthTech / VitalCode ──
+       8         primary: {
+       9           50:  '#e8f0fe',
+      10           100: '#c5d5f8',
+     … +36 lines (ctrl+o to expand)
+
+● Write(frontend\postcss.config.js)
+  ⎿  Wrote 6 lines to frontend\postcss.config.js
+      1 export default {
+      2   plugins: {
+      3     tailwindcss: {},
+      4     autoprefixer: {},
+      5   },
+      6 }
+
+● Write(frontend\index.html)
+  ⎿  Wrote 19 lines to frontend\index.html
+       1 <!doctype html>
+       2 <html lang="es">
+       3   <head>
+       4     <meta charset="UTF-8" />
+       5     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+       6     <meta name="viewport" content="width=device-width, initial-s
+         cale=1.0" />
+       7     <title>VitalCode | HealthTech S.A.S.</title>
+       8     <link rel="preconnect" href="https://fonts.googleapis.com" /
+         >
+       9     <link rel="preconnect" href="https://fonts.gstatic.com" cros
+         sorigin />
+      10     <link
+     … +9 lines (ctrl+o to expand)
+
+● Ahora los archivos fuente principales:
+
+● Write(frontend\src\main.tsx)
+  ⎿  Wrote 21 lines to frontend\src\main.tsx
+       1 import React from 'react'
+       2 import ReactDOM from 'react-dom/client'
+       3 import { BrowserRouter } from 'react-router-dom'
+       4 import { Toaster } from 'react-hot-toast'
+       5 import App from './App'
+       6 import './index.css'
+       7 
+       8 ReactDOM.createRoot(document.getElementById('root')!).render(
+       9   <React.StrictMode>
+      10     <BrowserRouter>
+     … +11 lines (ctrl+o to expand)
+
+● Write(frontend\src\index.css)
+  ⎿  Wrote 44 lines to frontend\src\index.css
+      1 @tailwind base;
+      2 @tailwind components;
+      3 @tailwind utilities;
+      4 
+      5 @layer base {
+      6   body {
+      7     @apply bg-gray-50 text-gray-800 font-sans;
+      8   }
+      9 }
+     … +34 lines (ctrl+o to expand)
+
+● Ahora las interfaces TypeScript (el núcleo del proyecto):
+
+● Write(frontend\src\types\index.ts)
+  ⎿  Wrote 109 lines to frontend\src\types\index.ts
+      1 // ==============================================================
+        ===============
+      2 //  VitalCode – Interfaces TypeScript
+      3 //  Derivadas del diagrama ER (ER_sinterminar.png)
+      4 //  HealthTech S.A.S.
+      5 // ==============================================================
+        ===============
+      6 
+      7 // ─── Enums de dominio ─────────────────────────────────────────
+        ───────────────
+      8 
+      9 export type EstadoUsuario = 'ACTIVO' | 'INACTIVO'
+     … +99 lines (ctrl+o to expand)
+
+● Ahora el archivo de servicios API:
+
+● Write(frontend\src\services\api.ts)
+  ⎿  Wrote 258 lines to frontend\src\services\api.ts
+       1 // =============================================================
+         ================
+       2 //  VitalCode – Capa de servicios / API
+       3 //  HealthTech S.A.S.
+       4 //
+       5 //  ✅ Todas las funciones usan axios con interceptores para el 
+         token JWT.
+       6 //  📌 Busca los comentarios "ENDPOINT SPRING BOOT" para pegar l
+         as URLs.
+       7 // =============================================================
+         ================
+       8 
+       9 import axios from 'axios'
+      10 import type {
+     … +248 lines (ctrl+o to expand)
+
+● Ahora los componentes UI reutilizables:
+
+● Write(frontend\src\components\ui\Modal.tsx)
+  ⎿  Wrote 63 lines to frontend\src\components\ui\Modal.tsx
+      1 import { useEffect, type ReactNode } from 'react'
+      2 
+      3 interface ModalProps {
+      4   isOpen: boolean
+      5   onClose: () => void
+      6   title: string
+      7   children: ReactNode
+      8   size?: 'sm' | 'md' | 'lg' | 'xl'
+      9 }
+     … +53 lines (ctrl+o to expand)
+● Write(frontend\src\components\ui\ConfirmDialog.tsx)
+  ⎿  Wrote 41 lines to frontend\src\components\ui\ConfirmDialog.tsx
+       1 interface ConfirmDialogProps {
+       2   isOpen: boolean
+       3   message: string
+       4   onConfirm: () => void
+       5   onCancel: () => void
+       6   loading?: boolean
+       7 }
+       8 
+       9 export default function ConfirmDialog({
+      10   isOpen,
+     … +31 lines (ctrl+o to expand)
+
+● Write(frontend\src\components\ui\Pagination.tsx)
+  ⎿  Wrote 33 lines to frontend\src\components\ui\Pagination.tsx
+       1 interface PaginationProps {
+       2   page: number
+       3   totalPages: number
+       4   onPageChange: (page: number) => void
+       5 }
+       6 
+       7 export default function Pagination({ page, totalPages, onPageCha
+         nge }: PaginationProps) {
+       8   if (totalPages <= 1) return null
+       9 
+      10   return (
+     … +23 lines (ctrl+o to expand)
+
+● Ahora el Layout / Sidebar:
+
+● Write(frontend\src\components\layout\Sidebar.tsx)
+  ⎿  Wrote 108 lines to frontend\src\components\layout\Sidebar.tsx
+      1 import { NavLink, useNavigate } from 'react-router-dom'
+      2 import { logout } from '../../services/api'
+      3 import toast from 'react-hot-toast'
+      4 
+      5 interface NavItem {
+      6   to: string
+      7   label: string
+      8   icon: JSX.Element
+      9 }
+     … +98 lines (ctrl+o to expand)
+
+● Write(frontend\src\components\layout\DashboardLayout.tsx)
+  ⎿  Wrote 29 lines to frontend\src\components\layout\DashboardLayout.tsx
+       1 import { type ReactNode } from 'react'
+       2 import Sidebar from './Sidebar'
+       3 
+       4 interface Props {
+       5   title: string
+       6   children: ReactNode
+       7 }
+       8 
+       9 export default function DashboardLayout({ title, children }: Pro
+         ps) {
+      10   return (
+     … +19 lines (ctrl+o to expand)
+
+● Ahora las páginas. Empezamos con Login:
+
+● Write(frontend\src\pages\LoginPage.tsx)
+  ⎿  Wrote 178 lines to frontend\src\pages\LoginPage.tsx
+       1 import { useState, type FormEvent } from 'react'
+       2 import { useNavigate } from 'react-router-dom'
+       3 import toast from 'react-hot-toast'
+       4 import { login } from '../services/api'
+       5 
+       6 export default function LoginPage() {
+       7   const navigate = useNavigate()
+       8   const [form, setForm] = useState({ correo: '', contraseña: '' 
+         })
+       9   const [loading, setLoading] = useState(false)
+      10   const [showPwd, setShowPwd] = useState(false)
+     … +168 lines (ctrl+o to expand)
+
+● Ahora el Módulo de Pacientes (el más completo, sirve como referencia):
+
+● Write(frontend\src\pages\PacientesPage.tsx)
+  ⎿  Wrote 392 lines to frontend\src\pages\PacientesPage.tsx
+       1 import { useState, useEffect, useCallback, type FormEvent } from
+          'react'
+       2 import toast from 'react-hot-toast'
+       3 import DashboardLayout from '../components/layout/DashboardLayou
+         t'
+       4 import Modal from '../components/ui/Modal'
+       5 import ConfirmDialog from '../components/ui/ConfirmDialog'
+       6 import Pagination from '../components/ui/Pagination'
+       7 import {
+       8   listarPacientes,
+       9   crearPaciente,
+      10   actualizarPaciente,
+     … +382 lines (ctrl+o to expand)
+
+● Módulo de Administradores:
+
+● Write(frontend\src\pages\AdministradoresPage.tsx)
+  ⎿  Wrote 312 lines to frontend\src\pages\AdministradoresPage.tsx
+       1 import { useState, useEffect, useCallback, type FormEvent } from
+          'react'
+       2 import toast from 'react-hot-toast'
+       3 import DashboardLayout from '../components/layout/DashboardLayou
+         t'
+       4 import Modal from '../components/ui/Modal'
+       5 import ConfirmDialog from '../components/ui/ConfirmDialog'
+       6 import Pagination from '../components/ui/Pagination'
+       7 import {
+       8   listarAdministradores,
+       9   crearAdministrador,
+      10   actualizarAdministrador,
+     … +302 lines (ctrl+o to expand)
+
+● Módulo de Personal de Salud:
+
+● Write(frontend\src\pages\PersonalSaludPage.tsx)
+  ⎿  Wrote 331 lines to frontend\src\pages\PersonalSaludPage.tsx
+       1 import { useState, useEffect, useCallback, type FormEvent } from
+          'react'
+       2 import toast from 'react-hot-toast'
+       3 import DashboardLayout from '../components/layout/DashboardLayou
+         t'
+       4 import Modal from '../components/ui/Modal'
+       5 import ConfirmDialog from '../components/ui/ConfirmDialog'
+       6 import Pagination from '../components/ui/Pagination'
+       7 import {
+       8   listarPersonalSalud,
+       9   crearPersonalSalud,
+      10   actualizarPersonalSalud,
+     … +321 lines (ctrl+o to expand)
+
+● Finalmente el App.tsx con el router:
+
+● Write(frontend\src\App.tsx)
+  ⎿  Wrote 36 lines to frontend\src\App.tsx
+       1 import { Routes, Route, Navigate } from 'react-router-dom'
+       2 import LoginPage from './pages/LoginPage'
+       3 import PacientesPage from './pages/PacientesPage'
+       4 import AdministradoresPage from './pages/AdministradoresPage'
+       5 import PersonalSaludPage from './pages/PersonalSaludPage'
+       6 
+       7 // Guard simple basado en token JWT en localStorage
+       8 function ProtectedRoute({ children }: { children: JSX.Element })
+          {
+       9   const token = localStorage.getItem('vitalcode_token')
+      10   return token ? children : <Navigate to="/login" replace />
+     … +26 lines (ctrl+o to expand)
+
+● Ahora verifico la estructura completa:
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● 21 archivos generados. Todo listo. Guardo contexto del proyecto:
+
+  Wrote 2 memories (ctrl+o to expand)
+
+● Todo listo. Aquí el resumen de lo que se generó:
+
+  ---
+  Estructura entregada — VitalCode/frontend/
+
+  frontend/
+  ├── index.html                          # Entry point HTML + Google Fonts
+  (Inter)
+  ├── package.json                        # React 18, Axios, React Router, React
+   Hot Toast
+  ├── vite.config.ts                      # Proxy /api → localhost:8080 (Spring
+  Boot)
+  ├── tailwind.config.js                  # Paleta corporativa navy #1E3A8A +
+  cyan #00ACC1
+  ├── tsconfig.json / tsconfig.node.json
+  ├── postcss.config.js
+  └── src/
+      ├── main.tsx                        # Entry React + BrowserRouter +
+  Toaster
+      ├── App.tsx                         # Router con guard JWT
+  (ProtectedRoute)
+      ├── index.css                       # Clases Tailwind reutilizables
+  (btn-primary, form-input…)
+      ├── types/index.ts                  # ← INTERFACES TYPESCRIPT (ER exacto)
+      ├── services/api.ts                 # ← TODOS LOS ENDPOINTS marcados "📌
+  ENDPOINT SPRING BOOT"
+      ├── components/
+      │   ├── layout/
+      │   │   ├── Sidebar.tsx             # Nav lateral con logo VitalCode,
+  colores navy
+      │   │   └── DashboardLayout.tsx     # Wrapper con sidebar + topbar
+      │   └── ui/
+      │       ├── Modal.tsx               # Modal reutilizable (ESC para cerrar)
+      │       ├── ConfirmDialog.tsx       # Dialog de confirmación de
+  eliminación
+      │       └── Pagination.tsx          # Paginación Spring Page<T>
+      └── pages/
+          ├── LoginPage.tsx               # Split screen: branding + formulario
+          ├── PacientesPage.tsx           # Tabla + Modal CRUD completo
+          ├── AdministradoresPage.tsx     # Tabla + Modal CRUD completo
+          └── PersonalSaludPage.tsx       # Tabla + Modal CRUD completo
+
+  ---
+  Para correr el proyecto
+
+  cd VitalCode/frontend
+  npm install
+  npm run dev
+  # → http://localhost:3000
+
+  Para conectar la API mañana
+
+  Abre src/services/api.ts y busca los comentarios 📌 ENDPOINT SPRING BOOT. Solo
+   necesitas confirmar/cambiar:
+
+  1. BASE_URL (línea ~20): si tu compañero usa otro puerto o context-path
+  diferente de /api
+  2. Cada path (ej: /pacientes, /administradores): ajústalos al nombre exacto
+  que implemente tu compañero en los @RequestMapping
+
+  El token JWT ya se adjunta automáticamente en cada petición vía interceptor de
+   Axios.
+
+✻ Brewed for 6m 31s
+
+❯ no abre el proyecto  aparece esto PS C:\Users\alejo\Downloads\VitalCode> npm  
+install                                                                         
+npm error code ENOENT                                                           
+npm error syscall open                                                          
+npm error path C:\Users\alejo\Downloads\VitalCode\package.json                  
+npm error errno -4058                                                           
+npm error enoent Could not read package.json: Error: ENOENT: no such file or    
+directory, open 'C:\Users\alejo\Downloads\VitalCode\package.json'               
+npm error enoent This is related to npm not being able to find a file.          
+npm error enoent                                                                
+npm error A complete log of this run can be found in: C:\Users\alejo\AppData\Lo 
+cal\npm-cache\_logs\2026-04-26T16_33_01_253Z-debug-0.log                        
+PS C:\Users\alejo\Downloads\VitalCode> npm run dev                              
+npm error code ENOENT                                                           
+npm error syscall open                                                          
+npm error path C:\Users\alejo\Downloads\VitalCode\package.json                  
+npm error errno -4058                                                           
+npm error enoent Could not read package.json: Error: ENOENT: no such file or    
+directory, open 'C:\Users\alejo\Downloads\VitalCode\package.json'               
+npm error enoent This is related to npm not being able to find a file.          
+npm error enoent                                                                
+npm error A complete log of this run can be found in: C:\Users\alejo\AppData\Lo 
+cal\npm-cache\_logs\2026-04-26T16_33_06_927Z-debug-0.log                        
+
+● El problema es que estás corriendo los comandos desde la carpeta raíz del
+  proyecto Spring Boot. El frontend está en la subcarpeta frontend/. Debes hacer
+   cd frontend primero:
+
+  cd C:\Users\alejo\Downloads\VitalCode\frontend
+  npm install
+  npm run dev
+
+  En PowerShell sería:
+
+  cd C:\Users\alejo\Downloads\VitalCode\frontend
+  npm install
+  npm run dev
+
+❯ en la parte del login que hago ?                                              
+
+● El login no puede funcionar todavía porque el backend de tu compañero no está 
+  conectado. Tienes dos opciones:
+
+  ---
+  Opción A — Saltarte el login temporalmente (recomendado para hoy)
+
+  Abre src/App.tsx y cambia el ProtectedRoute para que siempre deje pasar:
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(frontend\src\App.tsx)
+  ⎿  Added 2 lines, removed 1 line
+       5  import PersonalSaludPage from './pages/PersonalSaludPage'
+       6  
+       7  // Guard simple basado en token JWT en localStorage
+       8 +// TODO: cuando el backend esté listo, cambiar 'true' por: !!lo
+         +calStorage.getItem('vitalcode_token')                          
+       9  function ProtectedRoute({ children }: { children: JSX.Element }
+          ) {
+       9 -  const token = localStorage.getItem('vitalcode_token')        
+      10 +  const token = true || localStorage.getItem('vitalcode_token')
+      11    return token ? children : <Navigate to="/login" replace />
+      12  }
+      13  
+
+● Ahora puedes navegar directo a http://localhost:3000/pacientes y ver el
+  dashboard sin loguearte.
+
+  ---
+  Opción B — Simular el login con credenciales de prueba
+
+  Si quieres que el formulario de login funcione visualmente sin backend, abre
+  src/pages/LoginPage.tsx y reemplaza el handleSubmit:
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    // Simula un pequeño delay de red
+    await new Promise((r) => setTimeout(r, 800))
+    // Guarda un token falso para que el guard lo encuentre
+    localStorage.setItem('vitalcode_token', 'TOKEN_DE_PRUEBA')
+    toast.success('¡Bienvenido a VitalCode!')
+    navigate('/pacientes')
+    setLoading(false)
+  }
+
+  Así el flujo completo Login → Dashboard funciona, y cuando mañana conectes el
+  backend real solo tienes que quitar esas dos líneas del mock y descomentar el
+  await login(form) original.
+
+  ---
+  Recomendación para la entrega: usa la Opción A ahora para navegar y revisar
+  todas las pantallas, y agrega la Opción B en el login para que el flujo de
+  navegación se vea completo en la demo.
+
+❯ hazlo tu                                                                      
+
+  Read 1 file (ctrl+o to expand)
+● Update(frontend\src\pages\LoginPage.tsx)
+  ⎿  Added 1 line, removed 1 line
+      1  import { useState, type FormEvent } from 'react'
+      2  import { useNavigate } from 'react-router-dom'
+      3  import toast from 'react-hot-toast'
+      4 -import { login } from '../services/api'                         
+      4 +// import { login } from '../services/api'  // ← descomentar cua
+        +ndo el backend esté listo                                       
+      5  
+      6  export default function LoginPage() {
+      7    const navigate = useNavigate()
+
+● Update(frontend\src\pages\LoginPage.tsx)
+  ⎿  Added 17 lines, removed 9 lines
+      16        return
+      17      }
+      18      setLoading(true)
+      19 -    try {                                                      
+      20 -      await login(form)                                        
+      21 -      toast.success('¡Bienvenido a VitalCode!')                
+      22 -      navigate('/pacientes')                                   
+      23 -    } catch {                                                  
+      24 -      toast.error('Credenciales incorrectas. Intenta de nuevo.'
+         -)                                                              
+      25 -    } finally {                                                
+      26 -      setLoading(false)                                        
+      27 -    }                                                          
+      19 +    // TODO: reemplazar este bloque por el de abajo cuando el b
+         +ackend esté listo                                              
+      20 +    // ── MOCK (sin backend) ──────────────────────────────────
+         +────────────────                                               
+      21 +    await new Promise((r) => setTimeout(r, 800))               
+      22 +    localStorage.setItem('vitalcode_token', 'TOKEN_DE_PRUEBA') 
+      23 +    toast.success('¡Bienvenido a VitalCode!')                  
+      24 +    navigate('/pacientes')                                     
+      25 +    setLoading(false)                                          
+      26 +    // ── CON BACKEND (descomentar mañana) ────────────────────
+         +─────────────────                                              
+      27 +    // try {                                                   
+      28 +    //   await login(form)                                     
+      29 +    //   toast.success('¡Bienvenido a VitalCode!')             
+      30 +    //   navigate('/pacientes')                                
+      31 +    // } catch {                                               
+      32 +    //   toast.error('Credenciales incorrectas. Intenta de nuev
+         +o.')                                                           
+      33 +    // } finally {                                             
+      34 +    //   setLoading(false)                                     
+      35 +    // }                                                       
+      36    }
+      37  
+      38    return (
+
+● Listo. Ahora el login:
+
+  - Muestra el spinner al hacer clic en "Ingresar al sistema"
+  - Espera 800ms (simula la red)
+  - Guarda el token falso y redirige al dashboard de pacientes
+
+  Mañana cuando tengas la API solo descomenta el bloque // CON BACKEND y
+  comenta/borra el bloque // MOCK.
