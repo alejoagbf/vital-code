@@ -36,11 +36,6 @@ Se gestionan 3 tipos de perfiles usando herencia: `ADMINISTRADOR`, `PACIENTE` y 
 
 *Nota: Todos los endpoints de salida están protegidos retornando objetos `UsuarioResponse` para evitar la exposición de credenciales y datos sensibles.*
 
-## 📋 Próximos Pasos (Roadmap del Backend)
-- [ ] Refinamiento del manejo de Excepciones (Códigos HTTP 400, 401, 403, 404).
-- [ ] Implementación de 10 consultas estadísticas avanzadas usando JPQL/Native Query.
-- [ ] Preparación de endpoints para el consumo de gráficos en el frontend.
-
 ## ⚙️ Cómo ejecutar el proyecto localmente
 1. Clonar el repositorio y cambiar a la rama victor: `git checkout victor`
 2. Configurar las credenciales de la base de datos en `src/main/resources/application.properties`.
