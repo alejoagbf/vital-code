@@ -1,6 +1,7 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.controller;
 
 
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
@@ -49,6 +50,55 @@ public class UsuarioController {
     public UsuarioResponse login(@RequestBody LoginRequest credenciales) throws Exception {
         UsuarioResponse usuarioLogin = usuarioService.login(credenciales);
         return usuarioLogin;
+    }
+
+    // ENDPOINTS PARA ESTADÍSTICAS (GRÁFICOS)
+
+    @GetMapping("/stats/roles")
+    public List<EstadisticaResponse> getStatsRoles() {
+        return usuarioService.obtenerUsuariosPorRol();
+    }
+
+    @GetMapping("/stats/eps")
+    public List<EstadisticaResponse> getStatsEps() {
+        return usuarioService.obtenerPacientesPorEps();
+    }
+
+    @GetMapping("/stats/estados")
+    public List<EstadisticaResponse> getStatsEstados() {
+        return usuarioService.obtenerUsuariosPorEstado();
+    }
+
+    @GetMapping("/stats/generos")
+    public List<EstadisticaResponse> getStatsGeneros() {
+        return usuarioService.obtenerPacientesPorGenero();
+    }
+
+    @GetMapping("/stats/cargos")
+    public List<EstadisticaResponse> getStatsCargos() {
+        return usuarioService.obtenerPersonalPorCargo();
+    }
+
+    //  ENDPOINTS PARA FILTROS (REPORTES)
+
+    @GetMapping("/reporte/eps/{eps}")
+    public List<UsuarioResponse> getPacientesEps(@PathVariable String eps) {
+        return usuarioService.listarPacientesPorEps(eps);
+    }
+
+    @GetMapping("/reporte/inactivos")
+    public List<UsuarioResponse> getInactivos() {
+        return usuarioService.listarInactivos();
+    }
+
+    @GetMapping("/reporte/recientes")
+    public List<UsuarioResponse> getRecientes() {
+        return usuarioService.listarUltimosDiez();
+    }
+
+    @GetMapping("/reporte/sangre/{grupo}")
+    public List<UsuarioResponse> getPacientesSangre(@PathVariable String grupo) {
+        return usuarioService.listarPacientesPorSangre(grupo);
     }
 
 

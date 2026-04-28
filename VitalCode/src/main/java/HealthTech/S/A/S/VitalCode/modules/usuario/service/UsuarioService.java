@@ -1,6 +1,7 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.service;
 
 import HealthTech.S.A.S.VitalCode.domain.Usuario;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
@@ -19,4 +20,23 @@ public interface UsuarioService {
 
     UsuarioResponse login(LoginRequest credenciales) throws Exception;
 
+    List<EstadisticaResponse> obtenerUsuariosPorRol();
+
+    List<EstadisticaResponse> obtenerPacientesPorEps();
+
+    List<EstadisticaResponse> obtenerUsuariosPorEstado();
+
+    List<EstadisticaResponse> obtenerPacientesPorGenero();
+
+    List<EstadisticaResponse> obtenerPersonalPorCargo();
+
+    List<UsuarioResponse> listarPacientesPorEps(String eps);
+
+    List<UsuarioResponse> listarPersonalPorInstitucion(String inst);
+
+    List<UsuarioResponse> listarInactivos();
+
+    List<UsuarioResponse> listarUltimosDiez();
+
+    List<UsuarioResponse> listarPacientesPorSangre(String sangre);
 }

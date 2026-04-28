@@ -1,6 +1,7 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.service;
 
 import HealthTech.S.A.S.VitalCode.domain.Usuario;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
@@ -101,9 +102,67 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new Exception("El usuario se encuentra inactivo en el sistema de vitalCode");
         }
 
-        // 2. Si todo sale bien, lo pasamos por el mapper
+        // 2. Si esta bien pasamos al mapper
         UsuarioResponse usuarioResponse = usuarioMapper.toResponse(usuarioLogin);
 
         return usuarioResponse;
     }
+
+    @Override
+    public List<EstadisticaResponse> obtenerUsuariosPorRol() {
+        return usuarioRepository.contarUsuariosPorRol();
+    }
+
+    @Override
+    public List<EstadisticaResponse> obtenerPacientesPorEps() {
+        return usuarioRepository.contarPacientesPorEps();
+    }
+
+    @Override
+    public List<EstadisticaResponse> obtenerUsuariosPorEstado() {
+        return usuarioRepository.contarUsuariosPorEstado();
+    }
+
+    @Override
+    public List<EstadisticaResponse> obtenerPacientesPorGenero() {
+        return usuarioRepository.contarPacientesPorGenero();
+    }
+
+    @Override
+    public List<EstadisticaResponse> obtenerPersonalPorCargo() {
+        return usuarioRepository.contarPersonalPorCargo();
+    }
+
+    // MÉTODOS PARA REPORTES / FILTROS
+
+    @Override
+    public List<UsuarioResponse> listarPacientesPorEps(String eps) {
+        List<Usuario> lista = usuarioRepository.buscarPacientesPorEps(eps);
+        return lista.stream().map(usuarioMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<UsuarioResponse> listarPersonalPorInstitucion(String inst) {
+        List<Usuario> lista = usuarioRepository.buscarPersonalPorInstitucion(inst);
+        return lista.stream().map(usuarioMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<UsuarioResponse> listarInactivos() {
+        List<Usuario> lista = usuarioRepository.findByEstadoFalse();
+        return lista.stream().map(usuarioMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<UsuarioResponse> listarUltimosDiez() {
+        List<Usuario> lista = usuarioRepository.findTop10ByOrderByFechaCreacionDesc();
+        return lista.stream().map(usuarioMapper::toResponse).toList();
+    }
+
+    @Override
+    public List<UsuarioResponse> listarPacientesPorSangre(String sangre) {
+        List<Usuario> lista = usuarioRepository.buscarPacientesPorGrupoSanguineo(sangre);
+        return lista.stream().map(usuarioMapper::toResponse).toList();
+    }
+
 }
