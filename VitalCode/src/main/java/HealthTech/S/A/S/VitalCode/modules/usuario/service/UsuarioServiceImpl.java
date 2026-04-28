@@ -1,6 +1,7 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.service;
 
 import HealthTech.S.A.S.VitalCode.domain.Usuario;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
 import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
 import HealthTech.S.A.S.VitalCode.modules.usuario.mapper.UsuarioMapper;
@@ -35,16 +36,23 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public List<Usuario> listadoGeneral() throws Exception {
+    public List<UsuarioResponse> listadoGeneral() throws Exception {
 
+        // 1. Traemos la lista de entidades puras de la base de datos
         List<Usuario> listaGeneral = usuarioRepository.findAll();
 
-        return listaGeneral;
+        // 2. Transformamos cada Usuario a UsuarioResponse
+        List<UsuarioResponse> listaResponse = listaGeneral.stream()
+                .map(usuario -> usuarioMapper.toResponse(usuario))
+                .toList();
+
+        return listaResponse;
     }
 
     @Override
-    public Usuario estadoUsuario(Long idUsuario) throws Exception {
+    public UsuarioResponse estadoUsuario(Long idUsuario) throws Exception {
 
+        // 1. Buscamos la entidad pura
         Usuario estadoUsuario = usuarioRepository.findById(idUsuario).orElseThrow(
                 () -> new Exception("El usuario con ID " + idUsuario + " no existe en el sistema de vitalCode")
         );
@@ -53,19 +61,49 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new Exception("El usuario con ID " + idUsuario + " ya esta desactivado en el sistema de vitalCode");
         }
 
+        // 2. Actualizamos y guardamos la entidad pura
         estadoUsuario.setEstado(false);
         Usuario nuevoEstado = usuarioRepository.save(estadoUsuario);
 
-        return nuevoEstado;
+        // 3. Pasamos el resultado guardado por el mapper
+        UsuarioResponse usuarioResponse = usuarioMapper.toResponse(nuevoEstado);
+
+        return usuarioResponse;
     }
 
     @Override
-    public Usuario buscarUsuarioPorId(Long idUsuario) throws Exception {
+    public UsuarioResponse buscarUsuarioPorId(Long idUsuario) throws Exception {
 
+        // 1. Buscamos la entidad pura
         Usuario usuarioExiste = usuarioRepository.findById(idUsuario).orElseThrow(
                 () -> new Exception("El usuario con ID " + idUsuario + " no existe en el sistema de vitalCode")
         );
 
-        return usuarioExiste;
+        // 2. Pasamos el resultado por el mapper
+        UsuarioResponse usuarioResponse = usuarioMapper.toResponse(usuarioExiste);
+
+        return usuarioResponse;
+    }
+
+    @Override
+    public UsuarioResponse login(LoginRequest credenciales) throws Exception {
+
+        // 1. Buscamos la entidad pura usando el correo del record
+        Usuario usuarioLogin = usuarioRepository.findByCorreo(credenciales.correo()).orElseThrow(
+                () -> new Exception("Credenciales incorrectas")
+        );
+
+        if(!usuarioLogin.getContrasena().equals(credenciales.contrasena())){
+            throw new Exception("Credenciales incorrectas");
+        }
+
+        if(!usuarioLogin.getEstado()){
+            throw new Exception("El usuario se encuentra inactivo en el sistema de vitalCode");
+        }
+
+        // 2. Si todo sale bien, lo pasamos por el mapper
+        UsuarioResponse usuarioResponse = usuarioMapper.toResponse(usuarioLogin);
+
+        return usuarioResponse;
     }
 }
