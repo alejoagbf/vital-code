@@ -5,14 +5,13 @@ import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import {
-  listarPacientes,
-  crearPaciente,
-  actualizarPaciente,
-  eliminarPaciente,
+  listarPacientes, crearPaciente, actualizarPaciente, eliminarPaciente,
 } from '../services/api'
 import type { Paciente, PacientePayload, FormMode, GrupoSanguineo, Genero, EstadoUsuario } from '../types'
 import {
   Search, UserPlus, Pencil, Trash2, Users, UserCheck, UserX, Droplets,
+  User, Mail, Lock, Phone, CreditCard, Calendar, HeartPulse, Building2,
+  CheckCircle2,
 } from 'lucide-react'
 
 const INITIAL_FORM: PacientePayload = {
@@ -23,16 +22,34 @@ const INITIAL_FORM: PacientePayload = {
 const GRUPOS_SANGUINEOS: GrupoSanguineo[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 const GENEROS: Genero[] = ['MASCULINO', 'FEMENINO', 'OTRO']
 
-// Avatar color based on initials
 const AVATAR_COLORS = [
-  'from-blue-500 to-blue-700',
-  'from-violet-500 to-violet-700',
-  'from-cyan-500 to-cyan-700',
-  'from-teal-500 to-teal-700',
-  'from-indigo-500 to-indigo-700',
+  'from-blue-500 to-blue-700', 'from-violet-500 to-violet-700',
+  'from-cyan-500 to-cyan-700', 'from-teal-500 to-teal-700', 'from-indigo-500 to-indigo-700',
 ]
-const avatarColor = (name: string) =>
-  AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
+const avatarColor = (name: string) => AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
+
+// ── Input con ícono reutilizable ───────────────────────────────────────────────
+function Field({
+  label, icon, required, children,
+}: { label: string; icon: React.ReactNode; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+        {label}{required && <span className="text-primary-500 ml-0.5">*</span>}
+      </label>
+      <div className="relative group">
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400
+                        group-focus-within:text-primary-500 transition-colors duration-200 pointer-events-none z-10">
+          {icon}
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const inputCls = 'w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none focus:bg-white focus:border-primary-400 focus:ring-4 focus:ring-primary-500/10 transition-all duration-200'
+const selectCls = inputCls + ' appearance-none cursor-pointer'
 
 export default function PacientesPage() {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
@@ -55,33 +72,23 @@ export default function PacientesPage() {
     setLoading(true)
     try {
       const res = await listarPacientes(page)
-      setPacientes(res.content)
-      setTotalPages(res.totalPages)
-    } catch {
-      toast.error('Error al cargar los pacientes.')
-    } finally {
-      setLoading(false)
-    }
+      setPacientes(res.content); setTotalPages(res.totalPages)
+    } catch { toast.error('Error al cargar los pacientes.') }
+    finally { setLoading(false) }
   }, [page])
 
   useEffect(() => { fetchPacientes() }, [fetchPacientes])
 
   const filtered = pacientes.filter((p) => {
     const q = search.toLowerCase()
-    return (
-      p.nombre.toLowerCase().includes(q) ||
-      p.apellido.toLowerCase().includes(q) ||
-      p.numDocumento.includes(q) ||
-      p.correo.toLowerCase().includes(q)
-    )
+    return p.nombre.toLowerCase().includes(q) || p.apellido.toLowerCase().includes(q) ||
+      p.numDocumento.includes(q) || p.correo.toLowerCase().includes(q)
   })
 
   const activos   = pacientes.filter((p) => p.estado === 'ACTIVO').length
   const inactivos = pacientes.filter((p) => p.estado === 'INACTIVO').length
 
-  const openCreate = () => {
-    setMode('create'); setSelected(null); setForm(INITIAL_FORM); setModalOpen(true)
-  }
+  const openCreate = () => { setMode('create'); setSelected(null); setForm(INITIAL_FORM); setModalOpen(true) }
   const openEdit = (p: Paciente) => {
     setMode('edit'); setSelected(p)
     setForm({
@@ -96,91 +103,71 @@ export default function PacientesPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault(); setSaving(true)
     try {
-      if (mode === 'create') {
-        await crearPaciente(form); toast.success('Paciente creado correctamente.')
-      } else if (selected) {
-        await actualizarPaciente(selected.idPaciente, form)
-        toast.success('Paciente actualizado correctamente.')
-      }
+      if (mode === 'create') { await crearPaciente(form); toast.success('Paciente creado.') }
+      else if (selected) { await actualizarPaciente(selected.idPaciente, form); toast.success('Paciente actualizado.') }
       setModalOpen(false); fetchPacientes()
-    } catch {
-      toast.error('Ocurrió un error. Intenta de nuevo.')
-    } finally {
-      setSaving(false)
-    }
+    } catch { toast.error('Ocurrió un error. Intenta de nuevo.') }
+    finally { setSaving(false) }
   }
 
   const openDelete = (id: number) => { setDeleteId(id); setConfirmOpen(true) }
   const handleDelete = async () => {
-    if (!deleteId) return
-    setDeleting(true)
+    if (!deleteId) return; setDeleting(true)
     try {
-      await eliminarPaciente(deleteId)
-      toast.success('Paciente eliminado.')
+      await eliminarPaciente(deleteId); toast.success('Paciente eliminado.')
       setConfirmOpen(false); fetchPacientes()
-    } catch {
-      toast.error('Error al eliminar el paciente.')
-    } finally {
-      setDeleting(false)
-    }
+    } catch { toast.error('Error al eliminar.') }
+    finally { setDeleting(false) }
   }
 
   return (
-    <DashboardLayout title="Gestión de Pacientes" subtitle="Registro y control de pacientes">
+    <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
 
-        {/* ── Stat cards ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="stat-card">
-            <div className="w-11 h-11 rounded-xl bg-gradient-btn flex items-center justify-center shadow-md">
-              <Users className="w-5 h-5 text-white" />
+        {/* Header profesional */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-verde-50 to-verde-100 border border-verde-200 flex items-center justify-center flex-shrink-0">
+              <Users className="w-7 h-7 text-verde-600" />
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900">{pacientes.length}</p>
-              <p className="text-xs text-gray-500 font-medium">Total pacientes</p>
+              <h1 className="text-2xl font-black text-navy-900 tracking-tight">Gestión de Pacientes</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Administra historiales clínicos y datos personales de pacientes registrados.</p>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700
-                            flex items-center justify-center shadow-md">
-              <UserCheck className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-2xl font-black text-gray-900">{activos}</p>
-              <p className="text-xs text-gray-500 font-medium">Pacientes activos</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-400 to-red-600
-                            flex items-center justify-center shadow-md">
-              <UserX className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-2xl font-black text-gray-900">{inactivos}</p>
-              <p className="text-xs text-gray-500 font-medium">Pacientes inactivos</p>
-            </div>
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-canvas border border-gray-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-verde-500 animate-pulse" />
+            <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">{pacientes.length} en sistema</span>
           </div>
         </div>
 
-        {/* ── Toolbar ────────────────────────────────────────────────────── */}
+        {/* Stat cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { icon: <Users className="w-5 h-5 text-white" />, value: pacientes.length, label: 'Total pacientes', from: 'from-primary-500', to: 'to-primary-700' },
+            { icon: <UserCheck className="w-5 h-5 text-white" />, value: activos, label: 'Pacientes activos', from: 'from-emerald-500', to: 'to-emerald-700' },
+            { icon: <UserX className="w-5 h-5 text-white" />, value: inactivos, label: 'Pacientes inactivos', from: 'from-red-400', to: 'to-red-600' },
+          ].map((s) => (
+            <div key={s.label} className="stat-card">
+              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${s.from} ${s.to} flex items-center justify-center shadow-md flex-shrink-0`}>{s.icon}</div>
+              <div><p className="text-2xl font-black text-gray-900">{s.value}</p><p className="text-xs text-gray-500 font-medium">{s.label}</p></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Toolbar */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, documento…"
-              className="form-input pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <input type="text" placeholder="Buscar por nombre, documento…" className="form-input pl-10"
+              value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <button onClick={openCreate} className="btn-primary flex-shrink-0">
-            <UserPlus className="w-4 h-4" />
-            Nuevo Paciente
+            <UserPlus className="w-4 h-4" /> Nuevo Paciente
           </button>
         </div>
 
-        {/* ── Table card ─────────────────────────────────────────────────── */}
+        {/* Table */}
         <div className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -197,80 +184,53 @@ export default function PacientesPage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={7} className="py-16 text-center">
-                      <svg className="animate-spin w-7 h-7 mx-auto mb-3 text-primary-500"
-                        fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10"
-                          stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      <p className="text-gray-400 text-sm font-medium">Cargando pacientes…</p>
-                    </td>
-                  </tr>
+                  <tr><td colSpan={7} className="py-16 text-center">
+                    <svg className="animate-spin w-7 h-7 mx-auto mb-3 text-primary-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <p className="text-gray-400 text-sm font-medium">Cargando pacientes…</p>
+                  </td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-16 text-center">
-                      <Users className="w-10 h-10 mx-auto mb-3 text-gray-200" />
-                      <p className="text-gray-400 text-sm font-medium">No se encontraron pacientes.</p>
+                  <tr><td colSpan={7} className="py-16 text-center">
+                    <Users className="w-10 h-10 mx-auto mb-3 text-gray-200" />
+                    <p className="text-gray-400 text-sm font-medium">No se encontraron pacientes.</p>
+                  </td></tr>
+                ) : filtered.map((p) => (
+                  <tr key={p.idPaciente} className="table-row">
+                    <td className="table-td">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${avatarColor(p.nombre)} flex items-center justify-center text-white font-black text-xs flex-shrink-0 shadow-sm`}>
+                          {p.nombre[0]}{p.apellido[0]}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{p.nombre} {p.apellido}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{p.correo}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="table-td font-mono text-xs text-gray-600">{p.numDocumento}</td>
+                    <td className="table-td text-gray-600">{p.telefono}</td>
+                    <td className="table-td text-gray-600">{p.eps}</td>
+                    <td className="table-td">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                        <Droplets className="w-3 h-3" />{p.grupoSanguineo}
+                      </span>
+                    </td>
+                    <td className="table-td">
+                      <span className={p.estado === 'ACTIVO' ? 'badge-active' : 'badge-inactive'}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${p.estado === 'ACTIVO' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        {p.estado}
+                      </span>
+                    </td>
+                    <td className="table-td">
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => openEdit(p)} className="btn-icon text-blue-500 hover:bg-blue-50 hover:text-blue-700" title="Editar"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => openDelete(p.idPaciente)} className="btn-icon text-red-400 hover:bg-red-50 hover:text-red-600" title="Eliminar"><Trash2 className="w-4 h-4" /></button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  filtered.map((p) => (
-                    <tr key={p.idPaciente} className="table-row">
-                      <td className="table-td">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${avatarColor(p.nombre)}
-                                          flex items-center justify-center text-white font-black text-xs
-                                          flex-shrink-0 shadow-sm`}>
-                            {p.nombre[0]}{p.apellido[0]}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{p.nombre} {p.apellido}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">{p.correo}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="table-td text-gray-600 font-mono text-xs">{p.numDocumento}</td>
-                      <td className="table-td text-gray-600">{p.telefono}</td>
-                      <td className="table-td text-gray-600">{p.eps}</td>
-                      <td className="table-td">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg
-                                         text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                          <Droplets className="w-3 h-3" />
-                          {p.grupoSanguineo}
-                        </span>
-                      </td>
-                      <td className="table-td">
-                        <span className={p.estado === 'ACTIVO' ? 'badge-active' : 'badge-inactive'}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            p.estado === 'ACTIVO' ? 'bg-emerald-500' : 'bg-red-500'
-                          }`} />
-                          {p.estado}
-                        </span>
-                      </td>
-                      <td className="table-td">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => openEdit(p)}
-                            className="btn-icon text-blue-500 hover:bg-blue-50 hover:text-blue-700"
-                            title="Editar paciente"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => openDelete(p.idPaciente)}
-                            className="btn-icon text-red-400 hover:bg-red-50 hover:text-red-600"
-                            title="Eliminar paciente"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -279,118 +239,130 @@ export default function PacientesPage() {
         <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
 
-      {/* ── Modal CRUD ─────────────────────────────────────────────────────── */}
+      {/* ══════════════════ MODAL CRUD ══════════════════ */}
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={mode === 'create' ? 'Registrar nuevo paciente' : 'Editar paciente'}
+        title={mode === 'create' ? 'Registro de Nuevo Paciente' : 'Editar Paciente'}
+        subtitle="Complete la información para dar de alta en el sistema"
+        icon={<UserPlus />}
         size="xl"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Datos personales */}
+        <form onSubmit={handleSubmit} className="space-y-8">
+
+          {/* ── Sección: Datos personales ── */}
           <div>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-              Datos personales
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">Nombre *</label>
-                <input className="form-input" placeholder="Juan" required
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-1 h-5 rounded-full bg-gradient-to-b from-primary-500 to-accent-500" />
+              <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Datos personales</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <Field label="Nombre" icon={<User className="w-4 h-4" />} required>
+                <input className={inputCls} placeholder="Juan" required
                   value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Apellido *</label>
-                <input className="form-input" placeholder="Pérez" required
+              </Field>
+
+              <Field label="Apellido" icon={<User className="w-4 h-4" />} required>
+                <input className={inputCls} placeholder="Pérez" required
                   value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Número de documento *</label>
-                <input className="form-input" placeholder="1234567890" required
+              </Field>
+
+              <Field label="Número de documento" icon={<CreditCard className="w-4 h-4" />} required>
+                <input className={inputCls} placeholder="1234567890" required
                   value={form.numDocumento} onChange={(e) => setForm({ ...form, numDocumento: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Fecha de nacimiento *</label>
-                <input type="date" className="form-input" required
+              </Field>
+
+              <Field label="Fecha de nacimiento" icon={<Calendar className="w-4 h-4" />} required>
+                <input type="date" className={inputCls} required
                   value={form.fechaNacimiento} onChange={(e) => setForm({ ...form, fechaNacimiento: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Género *</label>
-                <select className="form-input" value={form.genero}
+              </Field>
+
+              <Field label="Género" icon={<Users className="w-4 h-4" />} required>
+                <select className={selectCls} value={form.genero}
                   onChange={(e) => setForm({ ...form, genero: e.target.value as Genero })}>
                   {GENEROS.map((g) => <option key={g}>{g}</option>)}
                 </select>
-              </div>
-              <div>
-                <label className="form-label">Grupo sanguíneo *</label>
-                <select className="form-input" value={form.grupoSanguineo}
+              </Field>
+
+              <Field label="Grupo sanguíneo" icon={<Droplets className="w-4 h-4" />} required>
+                <select className={selectCls} value={form.grupoSanguineo}
                   onChange={(e) => setForm({ ...form, grupoSanguineo: e.target.value as GrupoSanguineo })}>
                   {GRUPOS_SANGUINEOS.map((g) => <option key={g}>{g}</option>)}
                 </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className="form-label">EPS *</label>
-                <input className="form-input" placeholder="Ej: Sura, Nueva EPS, Compensar…" required
-                  value={form.eps} onChange={(e) => setForm({ ...form, eps: e.target.value })} />
+              </Field>
+
+              <div className="md:col-span-2">
+                <Field label="EPS" icon={<Building2 className="w-4 h-4" />} required>
+                  <input className={inputCls} placeholder="Ej: Sura, Nueva EPS, Compensar…" required
+                    value={form.eps} onChange={(e) => setForm({ ...form, eps: e.target.value })} />
+                </Field>
               </div>
             </div>
           </div>
 
-          {/* Cuenta de usuario */}
-          <div className="border-t border-gray-100 pt-5">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-              Cuenta de usuario
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="form-label">Correo electrónico *</label>
-                <input type="email" className="form-input" placeholder="correo@ejemplo.com" required
+          {/* ── Sección: Cuenta de usuario ── */}
+          <div className="border-t border-gray-100 pt-6">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-1 h-5 rounded-full bg-gradient-to-b from-accent-500 to-accent-700" />
+              <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Cuenta de usuario</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+              <Field label="Correo electrónico" icon={<Mail className="w-4 h-4" />} required>
+                <input type="email" className={inputCls} placeholder="correo@ejemplo.com" required
                   value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">
-                  Contraseña {mode === 'edit'
-                    ? <span className="text-gray-400 font-normal normal-case tracking-normal">(vacío = sin cambio)</span>
-                    : ' *'}
-                </label>
-                <input type="password" className="form-input" placeholder="••••••••"
+              </Field>
+
+              <Field label={mode === 'edit' ? 'Contraseña (vacío = sin cambio)' : 'Contraseña'} icon={<Lock className="w-4 h-4" />} required={mode === 'create'}>
+                <input type="password" className={inputCls} placeholder="••••••••"
                   required={mode === 'create'}
                   value={form.contraseña} onChange={(e) => setForm({ ...form, contraseña: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Teléfono *</label>
-                <input className="form-input" placeholder="3001234567" required
+              </Field>
+
+              <Field label="Teléfono" icon={<Phone className="w-4 h-4" />} required>
+                <input className={inputCls} placeholder="3001234567" required
                   value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
-              </div>
-              <div>
-                <label className="form-label">Estado *</label>
-                <select className="form-input" value={form.estado}
+              </Field>
+
+              <Field label="Estado" icon={<HeartPulse className="w-4 h-4" />} required>
+                <select className={selectCls} value={form.estado}
                   onChange={(e) => setForm({ ...form, estado: e.target.value as EstadoUsuario })}>
                   <option value="ACTIVO">ACTIVO</option>
                   <option value="INACTIVO">INACTIVO</option>
                 </select>
-              </div>
+              </Field>
             </div>
           </div>
 
-          {/* Botones */}
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+          {/* ── Botones ── */}
+          <div className="flex justify-end gap-3 border-t border-gray-100 pt-6">
             <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary">
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="btn-primary">
-              {saving ? 'Guardando…' : mode === 'create' ? 'Registrar paciente' : 'Guardar cambios'}
+            <button type="submit" disabled={saving}
+              className="flex items-center gap-2.5 px-7 py-3 rounded-xl text-white text-sm font-bold
+                         transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed
+                         shadow-lg hover:shadow-[0_8px_25px_rgba(30,58,138,0.3)]
+                         hover:-translate-y-0.5 active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #152866 100%)' }}>
+              {saving ? (
+                <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>Guardando…</>
+              ) : (
+                <><CheckCircle2 className="w-4 h-4" />
+                  {mode === 'create' ? 'Registrar paciente' : 'Guardar cambios'}</>
+              )}
             </button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
-        isOpen={confirmOpen}
+      <ConfirmDialog isOpen={confirmOpen}
         message="Esta acción eliminará al paciente permanentemente del sistema."
-        onConfirm={handleDelete}
-        onCancel={() => setConfirmOpen(false)}
-        loading={deleting}
-      />
+        onConfirm={handleDelete} onCancel={() => setConfirmOpen(false)} loading={deleting} />
     </DashboardLayout>
   )
 }

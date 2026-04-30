@@ -107,3 +107,53 @@ export interface PaginatedResponse<T> {
 // ─── Estado de formulario ────────────────────────────────────────────────────
 
 export type FormMode = 'create' | 'edit'
+
+// ─── Backend real: /api/v1/usuarios ──────────────────────────────────────────
+
+export type TipoUsuario = 'PACIENTE' | 'PERSONAL_SALUD' | 'ADMINISTRADOR'
+
+export interface UsuarioBackend {
+  tipoUsuario: TipoUsuario
+  idUsuario: number
+  correo: string
+  contrasena: string
+  estado: boolean
+  nombre: string
+  apellido: string
+  telefono: string
+  fechaCreacion: string
+  ultimoAcceso: string
+  // ADMINISTRADOR
+  departamento?: string
+  // PACIENTE
+  numDocumento?: number
+  fechaNacimiento?: string
+  grupoSanguineo?: string
+  eps?: string
+  genero?: string
+  // PERSONAL_SALUD
+  cargo?: string
+  numLicencia?: number
+  institucion?: string
+}
+
+export interface UsuarioPayload {
+  tipoUsuario: TipoUsuario
+  correo: string
+  contrasena: string
+  estado: boolean
+  nombre: string
+  apellido: string
+  telefono: string
+  fechaCreacion: string
+  ultimoAcceso: string
+  departamento?: string
+  numDocumento?: number
+  fechaNacimiento?: string
+  grupoSanguineo?: string
+  eps?: string
+  genero?: string
+  cargo?: string
+  numLicencia?: number
+  institucion?: string
+}
