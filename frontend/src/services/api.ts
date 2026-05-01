@@ -37,7 +37,7 @@ import type {
 
 // ─── Configuración base de Axios ──────────────────────────────────────────────
 
-const BASE_URL = 'http://localhost:8080/api'
+const BASE_URL = 'http://localhost:8081/api'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -269,6 +269,35 @@ export const consultaAdministradores = async (): Promise<UsuarioBackend[]> => {
 export const consultaUltimosRegistrados = async (limit = 10): Promise<UsuarioBackend[]> => {
   const { data } = await api.get<RawUsuario[]>(`/v1/usuarios/consultas/ultimos-registrados?limit=${limit}`)
   return data.map(normalizarUsuario)
+}
+
+export const filtrarPacientesPorEps = async (eps: string): Promise<Paciente[]> => {
+  const data = await consultaPacientesPorEps(eps)
+  return data.map(toPaciente)
+}
+
+export const buscarPacientesPorDocumento = async (doc: number): Promise<Paciente[]> => {
+  try {
+    const data = await consultaPacientePorDocumento(doc)
+    return [toPaciente(data)]
+  } catch {
+    return []
+  }
+}
+
+export const filtrarPacientesPorEstado = async (estado: boolean): Promise<Paciente[]> => {
+  const data = await consultaPorEstado(estado)
+  return data.filter((u) => u.tipoUsuario === 'PACIENTE').map(toPaciente)
+}
+
+export const filtrarPersonalPorCargo = async (cargo: string): Promise<PersonalSalud[]> => {
+  const data = await consultaPersonalPorCargo(cargo)
+  return data.map(toPersonalSalud)
+}
+
+export const filtrarPersonalPorEstado = async (estado: boolean): Promise<PersonalSalud[]> => {
+  const data = await consultaPorEstado(estado)
+  return data.filter((u) => u.tipoUsuario === 'PERSONAL_SALUD').map(toPersonalSalud)
 }
 
 // =============================================================================

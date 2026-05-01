@@ -6,11 +6,13 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import {
   listarPersonalSalud, crearPersonalSalud, actualizarPersonalSalud, eliminarPersonalSalud,
+  filtrarPersonalPorCargo, filtrarPersonalPorEstado,
 } from '../services/api'
 import type { PersonalSalud, PersonalSaludPayload, FormMode, EstadoUsuario } from '../types'
 import {
   Search, UserPlus, Pencil, Trash2, Stethoscope, UserCheck, UserX, Building2,
   User, Mail, Lock, Phone, BadgeCheck, Briefcase, HeartPulse, CheckCircle2,
+  Filter, X as XIcon,
 } from 'lucide-react'
 
 const INITIAL_FORM: PersonalSaludPayload = {
@@ -63,6 +65,10 @@ export default function PersonalSaludPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const [filtroCargoInput, setFiltroCargoInput] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+  const [filtroActivo, setFiltroActivo] = useState<string | null>(null)
+
   const fetchPersonal = useCallback(async () => {
     setLoading(true)
     try {
@@ -103,6 +109,37 @@ export default function PersonalSaludPage() {
       setModalOpen(false); fetchPersonal()
     } catch { toast.error('Ocurrió un error. Intenta de nuevo.') }
     finally { setSaving(false) }
+  }
+
+  const limpiarFiltros = () => {
+    setFiltroCargoInput('')
+    setFiltroEstado('TODOS')
+    setFiltroActivo(null)
+    fetchPersonal()
+  }
+
+  const aplicarFiltroCargo = async () => {
+    if (!filtroCargoInput.trim()) return
+    setLoading(true)
+    try {
+      const data = await filtrarPersonalPorCargo(filtroCargoInput.trim())
+      setPersonal(data); setTotalPages(1); setPage(0)
+      setFiltroActivo(`Cargo: ${filtroCargoInput.trim()}`)
+      if (data.length === 0) toast.error('No se encontró personal con ese cargo.')
+    } catch { toast.error('Error al filtrar por cargo') }
+    finally { setLoading(false) }
+  }
+
+  const aplicarFiltroEstado = async (estado: 'TODOS' | 'ACTIVO' | 'INACTIVO') => {
+    setFiltroEstado(estado)
+    if (estado === 'TODOS') { limpiarFiltros(); return }
+    setLoading(true)
+    try {
+      const data = await filtrarPersonalPorEstado(estado === 'ACTIVO')
+      setPersonal(data); setTotalPages(1); setPage(0)
+      setFiltroActivo(`Estado: ${estado}`)
+    } catch { toast.error('Error al filtrar por estado') }
+    finally { setLoading(false) }
   }
 
   const openDelete = (id: number) => { setDeleteId(id); setConfirmOpen(true) }
@@ -168,6 +205,51 @@ export default function PersonalSaludPage() {
                        shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
             <UserPlus className="w-4 h-4" /> Nuevo Personal
           </button>
+        </div>
+
+        {/* Filter bar */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Filtros de consulta</span>
+            {filtroActivo && (
+              <button onClick={limpiarFiltros}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-xs font-bold hover:bg-cyan-100 transition-colors">
+                <span>{filtroActivo}</span>
+                <XIcon className="w-3 h-3" />
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Cargo */}
+            <div className="flex gap-2">
+              <input type="text" placeholder="Filtrar por cargo (ej: Médico General)…"
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/10 transition-all"
+                value={filtroCargoInput}
+                onChange={(e) => setFiltroCargoInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && aplicarFiltroCargo()} />
+              <button onClick={aplicarFiltroCargo} disabled={!filtroCargoInput.trim() || loading}
+                className="px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold disabled:opacity-40 transition-colors">
+                Filtrar
+              </button>
+            </div>
+            {/* Estado */}
+            <div className="flex gap-1.5">
+              {(['TODOS', 'ACTIVO', 'INACTIVO'] as const).map((e) => (
+                <button key={e} onClick={() => aplicarFiltroEstado(e)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                    filtroEstado === e
+                      ? e === 'ACTIVO' ? 'bg-emerald-500 text-white shadow-sm'
+                        : e === 'INACTIVO' ? 'bg-red-500 text-white shadow-sm'
+                        : 'bg-navy-700 text-white shadow-sm'
+                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200'
+                  }`}>
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Table */}

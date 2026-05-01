@@ -6,12 +6,13 @@ import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Pagination from '../components/ui/Pagination'
 import {
   listarPacientes, crearPaciente, actualizarPaciente, eliminarPaciente,
+  filtrarPacientesPorEps, buscarPacientesPorDocumento, filtrarPacientesPorEstado,
 } from '../services/api'
 import type { Paciente, PacientePayload, FormMode, GrupoSanguineo, Genero, EstadoUsuario } from '../types'
 import {
   Search, UserPlus, Pencil, Trash2, Users, UserCheck, UserX, Droplets,
   User, Mail, Lock, Phone, CreditCard, Calendar, HeartPulse, Building2,
-  CheckCircle2,
+  CheckCircle2, Filter, X as XIcon,
 } from 'lucide-react'
 
 const INITIAL_FORM: PacientePayload = {
@@ -68,6 +69,11 @@ export default function PacientesPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const [filtroEpsInput, setFiltroEpsInput] = useState('')
+  const [filtroDocInput, setFiltroDocInput] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+  const [filtroActivo, setFiltroActivo] = useState<string | null>(null)
+
   const fetchPacientes = useCallback(async () => {
     setLoading(true)
     try {
@@ -108,6 +114,49 @@ export default function PacientesPage() {
       setModalOpen(false); fetchPacientes()
     } catch { toast.error('Ocurrió un error. Intenta de nuevo.') }
     finally { setSaving(false) }
+  }
+
+  const limpiarFiltros = () => {
+    setFiltroEpsInput('')
+    setFiltroDocInput('')
+    setFiltroEstado('TODOS')
+    setFiltroActivo(null)
+    fetchPacientes()
+  }
+
+  const aplicarFiltroEps = async () => {
+    if (!filtroEpsInput.trim()) return
+    setLoading(true)
+    try {
+      const data = await filtrarPacientesPorEps(filtroEpsInput.trim())
+      setPacientes(data); setTotalPages(1); setPage(0)
+      setFiltroActivo(`EPS: ${filtroEpsInput.trim()}`)
+    } catch { toast.error('Error al filtrar por EPS') }
+    finally { setLoading(false) }
+  }
+
+  const aplicarFiltroDoc = async () => {
+    if (!filtroDocInput.trim()) return
+    setLoading(true)
+    try {
+      const data = await buscarPacientesPorDocumento(Number(filtroDocInput))
+      setPacientes(data); setTotalPages(1); setPage(0)
+      setFiltroActivo(`Documento: ${filtroDocInput}`)
+      if (data.length === 0) toast.error('No se encontró paciente con ese documento.')
+    } catch { toast.error('Error al buscar por documento') }
+    finally { setLoading(false) }
+  }
+
+  const aplicarFiltroEstado = async (estado: 'TODOS' | 'ACTIVO' | 'INACTIVO') => {
+    setFiltroEstado(estado)
+    if (estado === 'TODOS') { limpiarFiltros(); return }
+    setLoading(true)
+    try {
+      const data = await filtrarPacientesPorEstado(estado === 'ACTIVO')
+      setPacientes(data); setTotalPages(1); setPage(0)
+      setFiltroActivo(`Estado: ${estado}`)
+    } catch { toast.error('Error al filtrar por estado') }
+    finally { setLoading(false) }
   }
 
   const openDelete = (id: number) => { setDeleteId(id); setConfirmOpen(true) }
@@ -165,6 +214,63 @@ export default function PacientesPage() {
           <button onClick={openCreate} className="btn-primary flex-shrink-0">
             <UserPlus className="w-4 h-4" /> Nuevo Paciente
           </button>
+        </div>
+
+        {/* Filter bar */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Filtros de consulta</span>
+            {filtroActivo && (
+              <button onClick={limpiarFiltros}
+                className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-verde-50 text-verde-700 border border-verde-200 text-xs font-bold hover:bg-verde-100 transition-colors">
+                <span>{filtroActivo}</span>
+                <XIcon className="w-3 h-3" />
+                Limpiar
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* EPS */}
+            <div className="flex gap-2">
+              <input type="text" placeholder="Filtrar por EPS…"
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-verde-400 focus:ring-2 focus:ring-verde-500/10 transition-all"
+                value={filtroEpsInput}
+                onChange={(e) => setFiltroEpsInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && aplicarFiltroEps()} />
+              <button onClick={aplicarFiltroEps} disabled={!filtroEpsInput.trim() || loading}
+                className="px-3 py-2 rounded-xl bg-verde-600 hover:bg-verde-700 text-white text-xs font-bold disabled:opacity-40 transition-colors">
+                Filtrar
+              </button>
+            </div>
+            {/* Documento */}
+            <div className="flex gap-2">
+              <input type="number" placeholder="Buscar por documento…"
+                className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-navy-400 focus:ring-2 focus:ring-navy-500/10 transition-all"
+                value={filtroDocInput}
+                onChange={(e) => setFiltroDocInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && aplicarFiltroDoc()} />
+              <button onClick={aplicarFiltroDoc} disabled={!filtroDocInput.trim() || loading}
+                className="px-3 py-2 rounded-xl bg-navy-700 hover:bg-navy-800 text-white text-xs font-bold disabled:opacity-40 transition-colors">
+                Buscar
+              </button>
+            </div>
+            {/* Estado */}
+            <div className="flex gap-1.5">
+              {(['TODOS', 'ACTIVO', 'INACTIVO'] as const).map((e) => (
+                <button key={e} onClick={() => aplicarFiltroEstado(e)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                    filtroEstado === e
+                      ? e === 'ACTIVO' ? 'bg-emerald-500 text-white shadow-sm'
+                        : e === 'INACTIVO' ? 'bg-red-500 text-white shadow-sm'
+                        : 'bg-navy-700 text-white shadow-sm'
+                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200'
+                  }`}>
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Table */}

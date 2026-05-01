@@ -8,6 +8,7 @@ import MiCodigoQRPage from './pages/MiCodigoQRPage'
 import PacientesPage from './pages/PacientesPage'
 import AdministradoresPage from './pages/AdministradoresPage'
 import PersonalSaludPage from './pages/PersonalSaludPage'
+import EstadisticasPage from './pages/EstadisticasPage'
 import DashboardLayout from './components/layout/DashboardLayout'
 
 type Rol = 'ADMINISTRADOR' | 'PERSONAL_SALUD' | 'PACIENTE'
@@ -71,6 +72,9 @@ export default function App() {
       } />
 
       {/* Admin y personal salud */}
+      <Route path="/estadisticas" element={
+        <ProtectedRoute roles={['ADMINISTRADOR']}><EstadisticasPage /></ProtectedRoute>
+      } />
       <Route path="/pacientes" element={
         <ProtectedRoute roles={['ADMINISTRADOR', 'PERSONAL_SALUD']}><PacientesPage /></ProtectedRoute>
       } />

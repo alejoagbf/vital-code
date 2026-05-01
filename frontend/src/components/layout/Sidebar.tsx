@@ -3,7 +3,7 @@ import { logout } from '../../services/api'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, ClipboardList, Calendar, QrCode,
-  ShieldCheck, LogOut, Users, Stethoscope,
+  ShieldCheck, LogOut, Users, Stethoscope, BarChart2,
 } from 'lucide-react'
 
 interface NavItem {
@@ -29,16 +29,17 @@ function obtenerRol(): Rol {
 const menuPorRol: Record<Rol, NavItem[]> = {
   ADMINISTRADOR: [
     { to: '/dashboard',       label: 'Panel Principal',  icon: <LayoutDashboard className="w-5 h-5" /> },
+    { to: '/estadisticas',    label: 'Estadísticas',     icon: <BarChart2 className="w-5 h-5" /> },
     { to: '/pacientes',       label: 'Pacientes',        icon: <ClipboardList className="w-5 h-5" /> },
     { to: '/personal-salud',  label: 'Personal de Salud', icon: <Stethoscope className="w-5 h-5" /> },
     { to: '/administradores', label: 'Administradores',  icon: <ShieldCheck className="w-5 h-5" /> },
     { to: '/administracion',  label: 'Administración',   icon: <Users className="w-5 h-5" />, badge: 'ADM' },
   ],
   PERSONAL_SALUD: [
-    { to: '/dashboard',  label: 'Panel Principal',   icon: <LayoutDashboard className="w-5 h-5" /> },
-    { to: '/pacientes',  label: 'Pacientes',         icon: <ClipboardList className="w-5 h-5" /> },
-    { to: '/citas',      label: 'Citas Médicas',     icon: <Calendar className="w-5 h-5" /> },
-    { to: '/historial',  label: 'Historial Clínico', icon: <ClipboardList className="w-5 h-5" /> },
+    { to: '/dashboard',   label: 'Panel Principal',   icon: <LayoutDashboard className="w-5 h-5" /> },
+    { to: '/pacientes',   label: 'Pacientes',         icon: <ClipboardList className="w-5 h-5" /> },
+    { to: '/citas',       label: 'Citas Médicas',     icon: <Calendar className="w-5 h-5" /> },
+    { to: '/historial',   label: 'Historial Clínico', icon: <ClipboardList className="w-5 h-5" /> },
   ],
   PACIENTE: [
     { to: '/dashboard',    label: 'Panel Principal',   icon: <LayoutDashboard className="w-5 h-5" /> },

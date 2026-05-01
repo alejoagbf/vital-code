@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import toast from 'react-hot-toast'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import {
-  listarTodosUsuarios, crearUsuarioUnificado, cambiarEstadoUsuario,
+  listarTodosUsuarios, crearUsuarioUnificado, cambiarEstadoUsuario, consultaBuscarTexto,
 } from '../services/api'
 import type { UsuarioBackend, UsuarioPayload, TipoUsuario } from '../types'
 import {
-  Search, UserPlus, Pencil, Users, X, Stethoscope, ShieldCheck,
+  Search, UserPlus, Pencil, Users, X, Stethoscope, ShieldCheck, X as XIcon,
 } from 'lucide-react'
 
 const PAGE_SIZE = 8
@@ -59,6 +59,8 @@ export default function GestionUsuariosPage() {
   const [saving, setSaving] = useState(false)
 
   const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [buscandoBackend, setBuscandoBackend] = useState(false)
+  const [busquedaActiva, setBusquedaActiva] = useState(false)
 
   const fetchUsuarios = useCallback(async () => {
     setLoading(true)
@@ -74,7 +76,26 @@ export default function GestionUsuariosPage() {
 
   useEffect(() => { fetchUsuarios() }, [fetchUsuarios])
 
+  const buscarEnBackend = async () => {
+    if (!search.trim()) return
+    setBuscandoBackend(true)
+    try {
+      const data = await consultaBuscarTexto(search.trim())
+      setUsuarios(data)
+      setBusquedaActiva(true)
+      setPage(0)
+    } catch { toast.error('Error al buscar en el sistema.') }
+    finally { setBuscandoBackend(false) }
+  }
+
+  const limpiarBusqueda = () => {
+    setSearch('')
+    setBusquedaActiva(false)
+    fetchUsuarios()
+  }
+
   const filtered = usuarios.filter((u) => {
+    if (busquedaActiva) return true
     const q = search.toLowerCase()
     return (
       u.nombre.toLowerCase().includes(q) ||
@@ -168,17 +189,31 @@ export default function GestionUsuariosPage() {
 
         {/* Toolbar */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-3 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          <div className="relative w-full sm:max-w-md flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar por documento, nombre o correo..."
-              className="w-full bg-canvas border border-transparent rounded-xl pl-11 pr-4 py-3
-                         text-sm text-navy-900 placeholder-gray-400 outline-none
-                         focus:bg-white focus:border-navy-300 focus:ring-2 focus:ring-navy-500/10 transition-all"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0) }}
-            />
+          <div className="flex gap-2 w-full sm:max-w-lg flex-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar por nombre o correo y presiona Enter…"
+                className="w-full bg-canvas border border-transparent rounded-xl pl-11 pr-4 py-3
+                           text-sm text-navy-900 placeholder-gray-400 outline-none
+                           focus:bg-white focus:border-navy-300 focus:ring-2 focus:ring-navy-500/10 transition-all"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); if (!e.target.value) limpiarBusqueda() }}
+                onKeyDown={(e) => e.key === 'Enter' && buscarEnBackend()}
+              />
+            </div>
+            {busquedaActiva ? (
+              <button onClick={limpiarBusqueda}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition-colors whitespace-nowrap">
+                <XIcon className="w-3.5 h-3.5" /> Limpiar
+              </button>
+            ) : (
+              <button onClick={buscarEnBackend} disabled={!search.trim() || buscandoBackend}
+                className="px-4 py-2 rounded-xl bg-navy-700 hover:bg-navy-800 text-white text-xs font-bold disabled:opacity-40 transition-colors whitespace-nowrap">
+                {buscandoBackend ? 'Buscando…' : 'Buscar'}
+              </button>
+            )}
           </div>
           <button
             onClick={() => { setForm(EMPTY_FORM); setModalOpen(true) }}
