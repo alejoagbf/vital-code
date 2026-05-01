@@ -1,10 +1,10 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.service;
 
-import HealthTech.S.A.S.VitalCode.domain.Administrador;
-import HealthTech.S.A.S.VitalCode.domain.Paciente;
-import HealthTech.S.A.S.VitalCode.domain.PersonalSalud;
 import HealthTech.S.A.S.VitalCode.domain.Usuario;
-import HealthTech.S.A.S.VitalCode.modules.usuario.dto.*;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
 
 import java.util.List;
 
@@ -12,32 +12,31 @@ public interface UsuarioService {
 
     UsuarioResponse crearUsuario(UsuarioRequest usuario) throws Exception;
 
-    List<Usuario> listadoGeneral() throws Exception;
+    List<UsuarioResponse> listadoGeneral() throws Exception;
 
-    Usuario estadoUsuario(Long idUsuario) throws Exception;
+    UsuarioResponse estadoUsuario(Long idUsuario) throws Exception;
 
-    Usuario buscarUsuarioPorId(Long idUsuario) throws Exception;
+    UsuarioResponse buscarUsuarioPorId (Long idUsuario) throws  Exception;
 
-    LoginResponse login(LoginRequest request) throws Exception;
+    UsuarioResponse login(LoginRequest credenciales) throws Exception;
 
-    EstadisticasResponse obtenerEstadisticas() throws Exception;
+    List<EstadisticaResponse> obtenerUsuariosPorRol();
 
-    // ── Consultas adicionales (req. 14) ──────────────────────────────────────
-    List<Usuario> listarPorEstado(Boolean estado);
+    List<EstadisticaResponse> obtenerPacientesPorEps();
 
-    List<Usuario> buscarPorTexto(String texto);
+    List<EstadisticaResponse> obtenerUsuariosPorEstado();
 
-    List<Paciente> listarPacientes();
+    List<EstadisticaResponse> obtenerPacientesPorGenero();
 
-    List<Paciente> listarPacientesPorEps(String eps);
+    List<EstadisticaResponse> obtenerPersonalPorCargo();
 
-    Paciente buscarPacientePorDocumento(Long numDocumento) throws Exception;
+    List<UsuarioResponse> listarPacientesPorEps(String eps);
 
-    List<PersonalSalud> listarPersonalSalud();
+    List<UsuarioResponse> listarPersonalPorInstitucion(String inst);
 
-    List<PersonalSalud> listarPersonalPorCargo(String cargo);
+    List<UsuarioResponse> listarInactivos();
 
-    List<Administrador> listarAdministradores();
+    List<UsuarioResponse> listarUltimosDiez();
 
-    List<Usuario> listarUltimosRegistrados(int limit);
+    List<UsuarioResponse> listarPacientesPorSangre(String sangre);
 }

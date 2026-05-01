@@ -1,5 +1,7 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.dto;
 
+import jakarta.persistence.Column;
+
 import java.time.LocalDateTime;
 
 public record UsuarioRequest(

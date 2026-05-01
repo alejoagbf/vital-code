@@ -15,11 +15,12 @@ import lombok.*;
 public class PersonalSalud extends Usuario {
 
     @Column(name = "cargo")
-    private String cargo;
+    private String cargo ;
 
     @Column(name = "numero_Licencia", unique = true)
-    private Long numLicencia;
+    private Long numLicencia ;
 
     @Column(name = "institucion")
-    private String institucion;
+    private String institucion ;
+
 }

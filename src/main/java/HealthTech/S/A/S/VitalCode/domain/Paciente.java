@@ -14,20 +14,22 @@ import java.time.LocalDateTime;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Paciente extends Usuario {
+
+public class Paciente extends  Usuario {
 
     @Column(name = "num_documento", unique = true)
-    private Long numDocumento;
+    private Long numDocumento ;
 
     @Column(name = "fecha_nacimiento")
-    private LocalDateTime fechaNacimiento;
+    private LocalDateTime fechaNacimiento ;
 
     @Column(name = "grupo_sanguineo")
-    private String grupoSanguineo;
+    private String grupoSanguineo ;
 
     @Column(name = "EPS")
-    private String eps;
+    private String eps ;
 
     @Column(name = "genero")
-    private String genero;
+    private String genero ;
+
 }

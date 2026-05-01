@@ -11,8 +11,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Administrador extends Usuario {
+public class Administrador extends Usuario{
 
     @Column(name = "departamento")
-    private String departamento;
+    private String departamento ;
+
+
+
+
 }

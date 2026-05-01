@@ -1,120 +1,105 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.controller;
 
-import HealthTech.S.A.S.VitalCode.domain.Administrador;
-import HealthTech.S.A.S.VitalCode.domain.Paciente;
-import HealthTech.S.A.S.VitalCode.domain.PersonalSalud;
-import HealthTech.S.A.S.VitalCode.domain.Usuario;
-import HealthTech.S.A.S.VitalCode.modules.usuario.dto.*;
+
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.LoginRequest;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioRequest;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.UsuarioResponse;
 import HealthTech.S.A.S.VitalCode.modules.usuario.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/usuarios")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:4173"})
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    // ── CRUD ─────────────────────────────────────────────────────────────────
     @PostMapping
-    public UsuarioResponse crearUsuario(@RequestBody UsuarioRequest usuario) throws Exception {
-        return usuarioService.crearUsuario(usuario);
+    public UsuarioResponse crearUsuario (@RequestBody UsuarioRequest usuario) throws Exception {
+        UsuarioResponse usuarioNuevo = usuarioService.crearUsuario(usuario);
+        return usuarioNuevo;
     }
 
     @GetMapping
-    public List<Usuario> listadoGeneral() throws Exception {
-        return usuarioService.listadoGeneral();
+    public List<UsuarioResponse> listadoGeneral () throws Exception {
+        List<UsuarioResponse> listaGeneral = usuarioService.listadoGeneral();
+
+        return listaGeneral;
     }
 
     @PutMapping("/{idUsuario}")
-    public Usuario estadoUsuario(@PathVariable Long idUsuario) throws Exception {
-        return usuarioService.estadoUsuario(idUsuario);
+    public UsuarioResponse estadoUsuario(@PathVariable Long idUsuario) throws Exception {
+        UsuarioResponse nuevoEstadoUsuario = usuarioService.estadoUsuario(idUsuario);
+
+        return nuevoEstadoUsuario;
+
     }
 
-    @GetMapping("/encontrarId/{idUsuario}")
-    public Usuario encontrarId(@PathVariable Long idUsuario) throws Exception {
-        return usuarioService.buscarUsuarioPorId(idUsuario);
+    @GetMapping ("/encontrarId/{idUsuario}")
+    public UsuarioResponse encontrarId(@PathVariable Long idUsuario) throws Exception {
+        UsuarioResponse encontrarId = usuarioService.buscarUsuarioPorId(idUsuario);
+        return encontrarId;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            LoginResponse response = usuarioService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
-        }
+    public UsuarioResponse login(@RequestBody LoginRequest credenciales) throws Exception {
+        UsuarioResponse usuarioLogin = usuarioService.login(credenciales);
+        return usuarioLogin;
     }
 
-    @GetMapping("/estadisticas")
-    public ResponseEntity<EstadisticasResponse> estadisticas() throws Exception {
-        return ResponseEntity.ok(usuarioService.obtenerEstadisticas());
+    // ENDPOINTS PARA ESTADÍSTICAS (GRÁFICOS)
+
+    @GetMapping("/stats/roles")
+    public List<EstadisticaResponse> getStatsRoles() {
+        return usuarioService.obtenerUsuariosPorRol();
     }
 
-    // ── Consultas (req. 14) ──────────────────────────────────────────────────
-    /** 1. Listado general (ya existe en GET /). */
-
-    /** 2. Listar por estado (activos / inactivos). */
-    @GetMapping("/consultas/por-estado")
-    public List<Usuario> consultaPorEstado(@RequestParam Boolean estado) {
-        return usuarioService.listarPorEstado(estado);
+    @GetMapping("/stats/eps")
+    public List<EstadisticaResponse> getStatsEps() {
+        return usuarioService.obtenerPacientesPorEps();
     }
 
-    /** 3. Buscar por nombre o apellido. */
-    @GetMapping("/consultas/buscar")
-    public List<Usuario> consultaBuscarTexto(@RequestParam String texto) {
-        return usuarioService.buscarPorTexto(texto);
+    @GetMapping("/stats/estados")
+    public List<EstadisticaResponse> getStatsEstados() {
+        return usuarioService.obtenerUsuariosPorEstado();
     }
 
-    /** 4. Listar todos los pacientes. */
-    @GetMapping("/consultas/pacientes")
-    public List<Paciente> consultaPacientes() {
-        return usuarioService.listarPacientes();
+    @GetMapping("/stats/generos")
+    public List<EstadisticaResponse> getStatsGeneros() {
+        return usuarioService.obtenerPacientesPorGenero();
     }
 
-    /** 5. Filtrar pacientes por EPS. */
-    @GetMapping("/consultas/pacientes/eps")
-    public List<Paciente> consultaPacientesPorEps(@RequestParam String eps) {
+    @GetMapping("/stats/cargos")
+    public List<EstadisticaResponse> getStatsCargos() {
+        return usuarioService.obtenerPersonalPorCargo();
+    }
+
+    //  ENDPOINTS PARA FILTROS (REPORTES)
+
+    @GetMapping("/reporte/eps/{eps}")
+    public List<UsuarioResponse> getPacientesEps(@PathVariable String eps) {
         return usuarioService.listarPacientesPorEps(eps);
     }
 
-    /** 6. Buscar paciente por número de documento (PK funcional). */
-    @GetMapping("/consultas/pacientes/documento/{doc}")
-    public ResponseEntity<?> consultaPacientePorDocumento(@PathVariable Long doc) {
-        try {
-            return ResponseEntity.ok(usuarioService.buscarPacientePorDocumento(doc));
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
-        }
+    @GetMapping("/reporte/inactivos")
+    public List<UsuarioResponse> getInactivos() {
+        return usuarioService.listarInactivos();
     }
 
-    /** 7. Listar todo el personal de salud. */
-    @GetMapping("/consultas/personal-salud")
-    public List<PersonalSalud> consultaPersonalSalud() {
-        return usuarioService.listarPersonalSalud();
+    @GetMapping("/reporte/recientes")
+    public List<UsuarioResponse> getRecientes() {
+        return usuarioService.listarUltimosDiez();
     }
 
-    /** 8. Filtrar personal de salud por cargo. */
-    @GetMapping("/consultas/personal-salud/cargo")
-    public List<PersonalSalud> consultaPersonalPorCargo(@RequestParam String cargo) {
-        return usuarioService.listarPersonalPorCargo(cargo);
+    @GetMapping("/reporte/sangre/{grupo}")
+    public List<UsuarioResponse> getPacientesSangre(@PathVariable String grupo) {
+        return usuarioService.listarPacientesPorSangre(grupo);
     }
 
-    /** 9. Listar todos los administradores. */
-    @GetMapping("/consultas/administradores")
-    public List<Administrador> consultaAdministradores() {
-        return usuarioService.listarAdministradores();
-    }
 
-    /** 10. Últimos N usuarios registrados. */
-    @GetMapping("/consultas/ultimos-registrados")
-    public List<Usuario> consultaUltimosRegistrados(@RequestParam(defaultValue = "10") int limit) {
-        return usuarioService.listarUltimosRegistrados(limit);
-    }
 }

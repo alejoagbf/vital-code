@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Proxy para evitar CORS durante desarrollo
       '/api': {
-        target: 'http://localhost:8080', // Puerto por defecto de Spring Boot
+        target: 'http://localhost:8081',
         changeOrigin: true,
       },
     },

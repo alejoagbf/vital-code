@@ -41,4 +41,5 @@ public record UsuarioResponse(
         Long numLicencia,
 
         String institucion
-) {}
+) {
+}

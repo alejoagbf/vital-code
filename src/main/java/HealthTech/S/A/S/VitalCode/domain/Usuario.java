@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.boot.internal.Abstract;
 
 import java.time.LocalDateTime;
 
@@ -24,31 +25,36 @@ import java.time.LocalDateTime;
 })
 public abstract class Usuario {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idUsuario;
+    private Long idUsuario ;
 
-    @Column(name = "correo", unique = true, nullable = false)
-    private String correo;
+    @Column(name = "correo" , unique = true, nullable = false)
+    private String correo ;
 
-    @Column(name = "contrasena", nullable = false)
-    private String contrasena;
+    @Column(name = "contraseña", nullable = false)
+    private String contrasena ;
 
     @Column(name = "estado", nullable = false)
-    private Boolean estado;
+    private Boolean estado ;
 
     @Column(name = "nombre", nullable = false)
-    private String nombre;
+    private String nombre ;
 
     @Column(name = "apellido", nullable = false)
-    private String apellido;
+    private String apellido ;
 
     @Column(name = "telefono", nullable = false)
-    private String telefono;
+    private String telefono ;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
     @Column(name = "ultimo_acceso", nullable = false)
-    private LocalDateTime ultimoAcceso;
+    private LocalDateTime ultimoAcceso ;
+
+
+
+
 }

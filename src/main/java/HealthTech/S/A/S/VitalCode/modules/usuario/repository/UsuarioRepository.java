@@ -1,66 +1,66 @@
 package HealthTech.S.A.S.VitalCode.modules.usuario.repository;
 
-import HealthTech.S.A.S.VitalCode.domain.Administrador;
-import HealthTech.S.A.S.VitalCode.domain.Paciente;
-import HealthTech.S.A.S.VitalCode.domain.PersonalSalud;
 import HealthTech.S.A.S.VitalCode.domain.Usuario;
+import HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+public interface UsuarioRepository extends JpaRepository<Usuario,Long> {
 
     Optional<Usuario> findByCorreo(String correo);
 
-    long countByEstado(Boolean estado);
 
-    List<Usuario> findByEstado(Boolean estado);
+    // CONSULTAS PARA LOS 5 GRÁFICOS (Retornan EstadisticaResponse)
 
-    @Query("SELECT u FROM Usuario u WHERE LOWER(u.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) " +
-           "OR LOWER(u.apellido) LIKE LOWER(CONCAT('%', :texto, '%'))")
-    List<Usuario> buscarPorNombreOApellido(@Param("texto") String texto);
+    //  Usuarios por Rol (Usamos TYPE para diferenciar las clases hijas)
+    @Query("SELECT new HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse(" +
+            "CASE WHEN TYPE(u) = Administrador THEN 'Administrador' " +
+            "WHEN TYPE(u) = Paciente THEN 'Paciente' " +
+            "ELSE 'Personal de Salud' END, COUNT(u)) " +
+            "FROM Usuario u GROUP BY TYPE(u)")
+    List<EstadisticaResponse> contarUsuariosPorRol();
 
-    @Query("SELECT p FROM Paciente p")
-    List<Paciente> findAllPacientes();
 
+    //  Pacientes por EPS
+    @Query("SELECT new HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse(p.eps, COUNT(p)) FROM Paciente p GROUP BY p.eps")
+    List<EstadisticaResponse> contarPacientesPorEps();
+
+    // Estado de Usuarios (Activos vs Inactivos)
+    @Query("SELECT new HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse(CASE WHEN u.estado = true THEN 'Activo' ELSE 'Inactivo' END, COUNT(u)) FROM Usuario u GROUP BY u.estado")
+    List<EstadisticaResponse> contarUsuariosPorEstado();
+
+    // Pacientes por Género
+    @Query("SELECT new HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse(p.genero, COUNT(p)) FROM Paciente p GROUP BY p.genero")
+    List<EstadisticaResponse> contarPacientesPorGenero();
+
+    //  Personal de Salud por Cargo
+    @Query("SELECT new HealthTech.S.A.S.VitalCode.modules.usuario.dto.EstadisticaResponse(ps.cargo, COUNT(ps)) FROM PersonalSalud ps GROUP BY ps.cargo")
+    List<EstadisticaResponse> contarPersonalPorCargo();
+
+
+    //  REPORTES Y FILTROS (Retornan List<Usuario> para mapear a Response)
+
+    //  Filtrar Pacientes por EPS
     @Query("SELECT p FROM Paciente p WHERE p.eps = :eps")
-    List<Paciente> findPacientesByEps(@Param("eps") String eps);
+    List<Usuario> buscarPacientesPorEps(String eps);
 
-    @Query("SELECT p.eps, COUNT(p) FROM Paciente p WHERE p.eps IS NOT NULL GROUP BY p.eps")
-    List<Object[]> contarPacientesPorEps();
+    //  Filtrar Personal por Institución
+    @Query("SELECT ps FROM PersonalSalud ps WHERE ps.institucion = :institucion")
+    List<Usuario> buscarPersonalPorInstitucion(String institucion);
 
-    @Query("SELECT p.genero, COUNT(p) FROM Paciente p WHERE p.genero IS NOT NULL GROUP BY p.genero")
-    List<Object[]> contarPacientesPorGenero();
+    //  Filtrar Usuarios Inactivos (Magia de Spring, no requiere @Query)
+    List<Usuario> findByEstadoFalse();
 
-    @Query("SELECT p.grupoSanguineo, COUNT(p) FROM Paciente p WHERE p.grupoSanguineo IS NOT NULL GROUP BY p.grupoSanguineo")
-    List<Object[]> contarPacientesPorGrupoSanguineo();
+    //  Últimos 10 Usuarios Registrados (Magia de Spring, ordena y limita)
+    List<Usuario> findTop10ByOrderByFechaCreacionDesc();
 
-    @Query("SELECT p FROM Paciente p WHERE p.numDocumento = :doc")
-    Optional<Paciente> findPacienteByNumDocumento(@Param("doc") Long doc);
+    //  Filtrar Pacientes por Grupo Sanguíneo
+    @Query("SELECT p FROM Paciente p WHERE p.grupoSanguineo = :grupoSanguineo")
+    List<Usuario> buscarPacientesPorGrupoSanguineo(String grupoSanguineo);
 
-    @Query("SELECT ps FROM PersonalSalud ps")
-    List<PersonalSalud> findAllPersonalSalud();
-
-    @Query("SELECT ps.cargo, COUNT(ps) FROM PersonalSalud ps WHERE ps.cargo IS NOT NULL GROUP BY ps.cargo")
-    List<Object[]> contarPersonalPorCargo();
-
-    @Query("SELECT ps.institucion, COUNT(ps) FROM PersonalSalud ps WHERE ps.institucion IS NOT NULL GROUP BY ps.institucion")
-    List<Object[]> contarPersonalPorInstitucion();
-
-    @Query("SELECT ps FROM PersonalSalud ps WHERE ps.cargo = :cargo")
-    List<PersonalSalud> findPersonalByCargo(@Param("cargo") String cargo);
-
-    @Query("SELECT a FROM Administrador a")
-    List<Administrador> findAllAdministradores();
-
-    @Query("SELECT a.departamento, COUNT(a) FROM Administrador a WHERE a.departamento IS NOT NULL GROUP BY a.departamento")
-    List<Object[]> contarAdministradoresPorDepartamento();
-
-    @Query("SELECT u FROM Usuario u ORDER BY u.fechaCreacion DESC")
-    List<Usuario> findUltimosRegistrados();
 }
