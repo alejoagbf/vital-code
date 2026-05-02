@@ -14,8 +14,7 @@ import type {
 } from '../types'
 
 // ─── Axios ────────────────────────────────────────────────────────────────────
-// URL relativa → pasa por el proxy de Vite → llega a localhost:8081
-const BASE_URL = '/api'
+const BASE_URL = 'http://localhost:8081/api'
 
 const api = axios.create({
   baseURL: BASE_URL,
